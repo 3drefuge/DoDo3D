@@ -31,6 +31,7 @@ off_script_content=$(echo "$off_script_content" | grep -v '^#')
 cancel_script_content=$(echo "$cancel_script_content" | grep -v '^#')
 unload_script_content=$(echo "$unload_script_content" | grep -v '^#')
 reprint_script_content=$(echo "$unload_script_content" | grep -v '^#')
+pidtune_script_content=$(echo "$unload_script_content" | grep -v '^#')
 
 # Iterate through the associative array values
 for machine_group in "${!machines[@]}"; do
@@ -61,5 +62,9 @@ for machine_group in "${!machines[@]}"; do
     # Create "REPRINT.sh" with "unload" content
     reprint_script_content="#!/bin/bash\necho \"run.sh reprint $(basename "$folder_name")\" | timeout 0.1 nc -v 192.168.77.120 12345"
     create_machine_script "$folder_name" "$machine_name" "REPRINT.sh" "$reprint_script_content"
+
+    # Create "PIDTUNE.sh" with "unload" content
+    pidtune_script_content="#!/bin/bash\necho \"run.sh pidtune $(basename "$folder_name")\" | timeout 0.1 nc -v 192.168.77.120 12345"
+    create_machine_script "$folder_name" "$machine_name" "PIDTUNE.sh" "$reprint_script_content"
   done
 done
