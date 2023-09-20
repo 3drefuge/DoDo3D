@@ -1,5 +1,3 @@
-# DoDo3D
-3D Print Farm Management Software
 DoDo3D Commander is software developed to help handle everyday 3d print farm management with minimal requirements.  Its design is to be a simple yet effective way of handling the mundane task associated with 3d printing.
 
 The interface (for now) is command line, but mostly automated so you don’t have to continually monitor.
