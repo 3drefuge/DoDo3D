@@ -30,8 +30,11 @@ on_script_content=$(echo "$on_script_content" | grep -v '^#')
 off_script_content=$(echo "$off_script_content" | grep -v '^#')
 cancel_script_content=$(echo "$cancel_script_content" | grep -v '^#')
 unload_script_content=$(echo "$unload_script_content" | grep -v '^#')
-reprint_script_content=$(echo "$unload_script_content" | grep -v '^#')
-pidtune_script_content=$(echo "$unload_script_content" | grep -v '^#')
+reprint_script_content=$(echo "$reprint_script_content" | grep -v '^#')
+pidtune_script_content=$(echo "$pidtune_script_content" | grep -v '^#')
+
+# Create an array to store unique machine names
+unique_machine_names=()
 
 # Iterate through the associative array values
 for machine_group in "${!machines[@]}"; do
@@ -39,6 +42,12 @@ for machine_group in "${!machines[@]}"; do
   numeric_value="${machine_type%% *}"
   machine_name="${machine_type#* }s"
   create_folders "$machine_name"
+  
+  # Check if the machine_name is unique, and add it to the array if not already present
+  if [[ ! " ${unique_machine_names[@]} " =~ " $machine_name " ]]; then
+    unique_machine_names+=("$machine_name")
+  fi
+
   for ((i = 1; i <= numeric_value; i++)); do
     folder_name="$machine_name/${machine_name%?}$i"
     create_folders "$folder_name"
@@ -67,4 +76,33 @@ for machine_group in "${!machines[@]}"; do
     pidtune_script_content="Set WshShell = CreateObject(\"WScript.Shell\") : WshShell.Run \"cmd /c echo run.sh pidtune $(basename "$folder_name") | nc.exe -w 1 -v 192.168.77.120 12345\", 0 : MsgBox \"Command OK!\", vbInformation, \"DoDo3D Commander v1.0\""
     create_machine_script "$folder_name" "$machine_name" "PIDTUNE.vbs" "$pidtune_script_content"
   done
+done
+
+# Create .vbs files in unique machine_name folders
+for unique_machine_name in "${unique_machine_names[@]}"; do
+  folder_name="$unique_machine_name"
+  
+  # Create "ONall.vbs" in the root folder
+  allon_script_content="Set WshShell = CreateObject(\"WScript.Shell\") : WshShell.Run \"cmd /c echo run.sh smarton ${unique_machine_name%"s"}ALL | nc.exe -w 1 -v 192.168.77.120 12345\", 0 : MsgBox \"Command OK!\", vbInformation, \"DoDo3D Commander v1.0\""
+  create_machine_script "$folder_name" "$unique_machine_name" "ON.vbs" "$allon_script_content"
+
+  # Create "OFFall.vbs" in the root folder
+  alloff_script_content="Set WshShell = CreateObject(\"WScript.Shell\") : WshShell.Run \"cmd /c echo run.sh smartoff ${unique_machine_name%"s"}ALL | nc.exe -w 1 -v 192.168.77.120 12345\", 0 : MsgBox \"Command OK!\", vbInformation, \"DoDo3D Commander v1.0\""
+  create_machine_script "$folder_name" "$unique_machine_name" "OFF.vbs" "$alloff_script_content"
+
+  # Create "CANCELall.vbs"
+  allcancel_script_content="Set WshShell = CreateObject(\"WScript.Shell\") : WshShell.Run \"cmd /c echo run.sh canceljob ${unique_machine_name%"s"}ALL | nc.exe -w 1 -v 192.168.77.120 12345\", 0 : MsgBox \"Command OK!\", vbInformation, \"DoDo3D Commander v1.0\""
+  create_machine_script "$folder_name" "$unique_machine_name" "CANCEL.vbs" "$allcancel_script_content"
+
+  # Create "UNLOADall.vbs"
+  allunload_script_content="Set WshShell = CreateObject(\"WScript.Shell\") : WshShell.Run \"cmd /c echo run.sh unload ${unique_machine_name%"s"}ALL | nc.exe -w 1 -v 192.168.77.120 12345\", 0 : MsgBox \"Command OK!\", vbInformation, \"DoDo3D Commander v1.0\""
+  create_machine_script "$folder_name" "$unique_machine_name" "UNLOAD.vbs" "$allunload_script_content"
+
+  # Create "REPRINTall.vbs"
+  allreprint_script_content="Set WshShell = CreateObject(\"WScript.Shell\") : WshShell.Run \"cmd /c echo run.sh reprint ${unique_machine_name%"s"}ALL | nc.exe -w 1 -v 192.168.77.120 12345\", 0 : MsgBox \"Command OK!\", vbInformation, \"DoDo3D Commander v1.0\""
+  create_machine_script "$folder_name" "$unique_machine_name" "REPRINT.vbs" "$allreprint_script_content"
+
+  # Create "PIDTUNEall.vbs"
+  allpidtune_script_content="Set WshShell = CreateObject(\"WScript.Shell\") : WshShell.Run \"cmd /c echo run.sh pidtune ${unique_machine_name%"s"}ALL | nc.exe -w 1 -v 192.168.77.120 12345\", 0 : MsgBox \"Command OK!\", vbInformation, \"DoDo3D Commander v1.0\""
+  create_machine_script "$folder_name" "$unique_machine_name" "PIDTUNE.vbs" "$allpidtune_script_content"
 done
